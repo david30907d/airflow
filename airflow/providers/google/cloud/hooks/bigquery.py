@@ -20,43 +20,43 @@
 This module contains a BigQuery Hook, as well as a very basic PEP 249
 implementation for BigQuery.
 """
-import hashlib
 import json
-import logging
 import time
+import hashlib
+import logging
 import warnings
 from copy import deepcopy
+from typing import Any, Dict, List, Type, Tuple, Union, Mapping, Iterable, NoReturn, Optional, Sequence
 from datetime import datetime, timedelta
-from typing import Any, Dict, Iterable, List, Mapping, NoReturn, Optional, Sequence, Tuple, Type, Union
 
+from pandas import DataFrame
+from pandas_gbq import read_gbq
+from pandas_gbq.gbq import (
+    GbqConnector,
+    _test_google_api_imports as gbq_test_google_api_imports,
+    _check_google_client_version as gbq_check_google_client_version,
+)
 from google.api_core.retry import Retry
 from google.cloud.bigquery import (
     DEFAULT_RETRY,
     Client,
     CopyJob,
-    ExternalConfig,
-    ExtractJob,
     LoadJob,
     QueryJob,
+    ExtractJob,
     SchemaField,
+    ExternalConfig,
 )
-from google.cloud.bigquery.dataset import AccessEntry, Dataset, DatasetListItem, DatasetReference
-from google.cloud.bigquery.table import EncryptionConfiguration, Row, Table, TableReference
 from google.cloud.exceptions import NotFound
 from googleapiclient.discovery import Resource, build
-from pandas import DataFrame
-from pandas_gbq import read_gbq
-from pandas_gbq.gbq import (
-    GbqConnector,
-    _check_google_client_version as gbq_check_google_client_version,
-    _test_google_api_imports as gbq_test_google_api_imports,
-)
+from google.cloud.bigquery.table import Row, Table, TableReference, EncryptionConfiguration
+from google.cloud.bigquery.dataset import Dataset, AccessEntry, DatasetListItem, DatasetReference
 
 from airflow.exceptions import AirflowException
 from airflow.hooks.dbapi import DbApiHook
-from airflow.providers.google.common.hooks.base_google import GoogleBaseHook
 from airflow.utils.helpers import convert_camel_to_snake
 from airflow.utils.log.logging_mixin import LoggingMixin
+from airflow.providers.google.common.hooks.base_google import GoogleBaseHook
 
 log = logging.getLogger(__name__)
 
@@ -2809,6 +2809,10 @@ class BigQueryCursor(BigQueryBaseCursor):
 
     def setoutputsize(self, size: Any, column: Any = None) -> None:
         """Does nothing by default"""
+
+    def get_uri(self) -> str:
+        """Override DbApiHook get_uri method for get_sqlalchemy_engine()"""
+        return "bigquery://"
 
 
 def _bind_parameters(operation: str, parameters: dict) -> str:
